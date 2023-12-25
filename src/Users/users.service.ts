@@ -6,10 +6,12 @@ import { DataSource, Repository } from 'typeorm';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { hash, compare } from 'bcrypt';
 import { UserSignInDto } from './dto/user-signin.dto';
+import { AuthRequest } from 'src/auth/types/authRequest.type';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, private readonly dataSource: DataSource) {}
+  constructor(@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, private readonly dataSource: DataSource, private readonly jwtService: JwtService) {}
 
   async signup(createUserDto: UserSignupDto) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -104,5 +106,14 @@ export class UsersService {
 
   async UserExist(email: string) {
     return await this.userRepo.findOneBy({email});
+  }
+
+  async currentUser(request: AuthRequest) {
+    const token=request.headers.authorization.split(' ')[1];
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.SECRET,
+    });
+    const { email } = payload;
+    return await this.UserExist(email);
   }
 }

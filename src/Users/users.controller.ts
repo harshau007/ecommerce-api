@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Res, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserSignupDto } from './dto/user-signup.dto';
@@ -8,6 +8,7 @@ import { AuthGuard } from 'src/auth/guards/authentication.gaurd';
 import { Response } from 'express';
 import { AuthorizationGuard } from 'src/auth/guards/authorization.guard';
 import { Role } from 'src/decorator/role.decorator';
+import { AuthRequest } from 'src/auth/types/authRequest.type';
 
 @Controller('users')
 export class UsersController {
@@ -38,7 +39,7 @@ export class UsersController {
 
   @Role(['user','admin'])
   @UseGuards(AuthGuard, AuthorizationGuard)
-  @Get(':id')
+  @Get('get/:id')
   async findOne(@Param('id') id: string) {
     return await this.usersService.findOne(+id);
   }
@@ -55,5 +56,10 @@ export class UsersController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @Get('current')
+  async getme(@Req() request: AuthRequest) {
+    return this.usersService.currentUser(request);
   }
 }
