@@ -6,18 +6,20 @@ import { DataSource, Repository } from 'typeorm';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { hash, compare } from 'bcrypt';
 import { UserSignInDto } from './dto/user-signin.dto';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, private readonly dataSource: DataSource, private readonly jwtService: JwtService) {}
+  constructor(@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, private readonly dataSource: DataSource) {}
 
   async signup(createUserDto: UserSignupDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
     createUserDto.password = await hash(createUserDto.password, 10);
+
     if (await this.UserExist(createUserDto.email)) throw new BadRequestException('Email Already Exists');
+
     try {
       const user = this.userRepo.create(createUserDto);
       await queryRunner.manager.save(user);
@@ -26,6 +28,7 @@ export class UsersService {
       return { user: user };
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      throw new BadRequestException('Error occured while registering');
     } finally {
       await queryRunner.release();
     }

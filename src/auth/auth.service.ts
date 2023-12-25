@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserSignInDto } from 'src/Users/dto/user-signin.dto';
-import { UserEntity } from 'src/Users/entities/user.entity';
+import { Roles } from 'src/utils/common/users-role.enum';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) {}
 
-
-    async accessToken(user: string, id: number) {
-        return await this.jwtService.signAsync({ email: user, id: id});
-    }
+  async accessToken(user: string, id: number, role: Roles[]) {
+    return await this.jwtService.signAsync({ email: user, id: id, role: role });
+  }
 }
