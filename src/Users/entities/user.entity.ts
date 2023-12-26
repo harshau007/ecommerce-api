@@ -1,3 +1,4 @@
+import { CategoryEntity } from "src/categories/entities/category.entity";
 import { Roles } from "src/utils/common/users-role.enum";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 
@@ -18,9 +19,12 @@ export class UserEntity {
     @Column({type:'enum', enum: Roles, array: true, default: [Roles.USER]})
     role: Roles[]
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: "timestamp with time zone", default: () => "CURRENT_TIMESTAMP"})
     createdAt: Timestamp
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: "timestamp with time zone", onUpdate: "CURRENT_TIMESTAMP"})
     updatedAt: Timestamp
+
+    @OneToMany(()=>CategoryEntity, (cate)=> cate.addedBy)
+    categories: CategoryEntity
 }
