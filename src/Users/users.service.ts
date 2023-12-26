@@ -62,7 +62,7 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    return await this.userRepo.findOne({
+    const user = await this.userRepo.findOne({
       where: {id},
       select: {
         id: true,
@@ -71,6 +71,8 @@ export class UsersService {
         role: true
       }
     });
+    if (!user) throw new BadRequestException("User does not exist");
+    return user;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -92,6 +94,8 @@ export class UsersService {
 
       await queryRunner.manager.save(user);
       await queryRunner.commitTransaction();
+
+      return { "updated": user };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException('Error occured while updating');
@@ -101,7 +105,9 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    return await this.userRepo.delete(id);
+    const user = await this.findOne(id);
+    await this.userRepo.delete(id)
+    return { "deleted": user};
   }
 
   async UserExist(email: string) {

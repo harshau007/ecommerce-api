@@ -38,19 +38,26 @@ export class CategoriesService {
   }
 
   async findOne(id: number) {
-    return await this.categoryRepo.findOne({
+    const category = await this.categoryRepo.findOne({
       where: {
         id: id
       },
       select: {
         id: true,
         title: true,
-        description: true
+        description: true,
+        addedBy: {
+          id:true,
+          name:true,
+          email:true
+        }
       },
       relations: {
         addedBy: true
       }
     });
+    if (!category) throw new BadRequestException("Category does not exits");
+    return category;
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
@@ -71,6 +78,8 @@ export class CategoriesService {
 
       await queryRunner.manager.save(category);
       await queryRunner.commitTransaction();
+
+      return { "updated": category };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException('Error occured while updating');
@@ -80,6 +89,8 @@ export class CategoriesService {
   }
 
   async remove(id: number) {
-    return await this.categoryRepo.delete({id});
+    const category = await this.findOne(id);
+    await this.categoryRepo.delete({id});
+    return category;
   }
 }

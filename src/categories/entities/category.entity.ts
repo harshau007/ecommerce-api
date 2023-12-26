@@ -1,5 +1,6 @@
 import { UserEntity } from "src/Users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
+import { ProductEntity } from "src/products/entities/product.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 
 @Entity('category')
 export class CategoryEntity {
@@ -20,4 +21,7 @@ export class CategoryEntity {
 
     @ManyToOne(()=> UserEntity, (user)=> user.categories)
     addedBy: UserEntity
+
+    @OneToMany(()=> ProductEntity, (product)=> product.belongsTo)
+    products: ProductEntity[]
 }
